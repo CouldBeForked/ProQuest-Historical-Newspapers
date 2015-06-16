@@ -1,7 +1,7 @@
 <?php
 
 # imports file want to clean up into an array
-$lines = file('June-Dec1969ID&Date.txt');
+$lines = file('June-Dec1969ID&Date.txt', FILE_IGNORE_NEW_LINES);
 
 # creates new arrays from only lines that contain 'http' and 'date' from $lines array
 $urls = preg_grep('/(http)/um', $lines);
@@ -15,7 +15,7 @@ $newdates = array();
 # replaces portion of url and puts into new array
 foreach ($urls as $url) {
 	$rawstring = $url;
-	$newstring = str_replace("search.proquest.com", "search.proquest.com.mutex.gmu.edu/hnpwashingtonpost", $rawstring);
+	$newstring = str_replace("search.proquest.com", "search.proquest.com.mutex.gmu.edu/hnplatimes", $rawstring);
 	$newurls[] = $newstring;
 }
 
@@ -39,11 +39,22 @@ foreach ($datelines as $dateline) {
 	$newdates[] = $comma;
 }
 
-# creates a new file for the finished urls and dates
-# eventually will be replaced with wget command for each url in the $wanted_urls array and renaming the downloaded PDF based on the $newdates array
-$newfile = 'June-Dec1969URLs.txt';
-file_put_contents($newfile, $wanted_urls);
+# establishes base of wget command
+$wget = 'wget --load-cookies cookies.txt -O ';
 
-$newfile2 = 'June-Dec1969dates.txt';
-file_put_contents($newfile2, $newdates);
+# creates dummy array for testing foreach loop
+$commands = array();
+
+# combines my url and date arrays together and concatinates with my wget command to create a new array of individual wget commands for each url and renaming the grabbed file based on the publication date
+foreach (array_combine($wanted_urls, $newdates) as $wanted_url => $newdate) {
+	$command = $wget .$newdate ." " .$wanted_url ."\n";
+# line 52 is the eventual correct code, for now I just want to make sure my string structure is working and correct 
+#	exec($command);
+	$commands[] = $command;
+}
+
+# eventually deleted when want to run the exec command
+$newfile = 'commands.txt';
+file_put_contents($newfile, $commands);
+
 ?>
